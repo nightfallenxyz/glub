@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Glub Clicker: The Aquatic Absurdity</title>
+    <style>
+        body {
+            background: linear-gradient(to bottom, #000044, #006666);
+            color: #00ffff;
+            font-family: 'Comic Sans MS', cursive;
+            text-align: center;
+        }
+        #glubContainer {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px auto;
+            width: 80%;
+        }
+        #glubButton {
+            background: #00cccc;
+            border: 3px solid #00ffff;
+            border-radius: 50%;
+            width: 200px;
+            height: 200px;
+            font-size: 24px;
+            cursor: pointer;
+            transition: transform 0.1s;
+            margin: 20px;
+        }
+        #glubButton:active {
+            transform: scale(0.9);
+        }
+        .upgrade {
+            background: #004444;
+            border: 2px dashed #00ffff;
+            padding: 10px;
+            margin: 10px;
+            cursor: pointer;
+        }
+        .bubble {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            animation: float 3s infinite;
+        }
+        @keyframes float {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-100px); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <h1>🐠 GLUB CLICKER 🦑</h1>
+    
+    <div id="glubContainer">
+        <div id="glubCounter">GLUBS: 0</div>
+        <button id="glubButton">GLUB!<br>🐟</button>
+        
+        <h2>GLUB UPGRADES</h2>
+        <div id="upgrades"></div>
+        
+        <h2>🪸 PRESTIGE SYSTEM 🪸</h2>
+        <div id="prestige"></div>
+        
+        <div id="news">📰 GLUB NEWS: Welcome to the Glubverse!</div>
+    </div>
+
+    <script>
+        let glubs = 0;
+        let upgrades = {
+            kelp: { cost: 10, owned: 0, gps: 1 },
+            crabs: { cost: 50, owned: 0, gps: 5 },
+            jellyfish: { cost: 100, owned: 0, gps: 10 },
+            submarine: { cost: 500, owned: 0, gps: 50 }
+        };
+        let plankton = 0;
+
+        function createBubble() {
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble';
+            bubble.style.left = Math.random() * 90 + '%';
+            document.body.appendChild(bubble);
+            setTimeout(() => bubble.remove(), 3000);
+        }
+
+        function updateDisplay() {
+            document.getElementById('glubCounter').textContent = 
+                `GLUBS: ${Math.floor(glubs)} 🐠 | PLANKTON: ${plankton} 🌟`;
+            
+            // Update upgrades
+            document.getElementById('upgrades').innerHTML = Object.entries(upgrades)
+                .map(([key, val]) => `
+                    <div class="upgrade" onclick="buyUpgrade('${key}')">
+                        ${key.toUpperCase()} - ${val.cost} GLUBS<br>
+                        OWNED: ${val.owned} | GPS: ${val.gps}
+                    </div>
+                `).join('');
+            
+            // Update prestige
+            document.getElementById('prestige').innerHTML = 
+                plankton >= 1 ? "ASCENDED TO GLUB GOD" : 
+                `<button class="upgrade" onclick="prestige()">
+                    ASCEND FOR ${plankton + 1}🌟 (RESETS EVERYTHING)
+                </button>`;
+        }
+
+        function buyUpgrade(type) {
+            if(glubs >= upgrades[type].cost) {
+                glubs -= upgrades[type].cost;
+                upgrades[type].owned++;
+                upgrades[type].cost *= 1.5;
+                updateDisplay();
+            }
+        }
+
+        function prestige() {
+            plankton++;
+            glubs = 0;
+            for(let key in upgrades) {
+                upgrades[key] = { 
+                    cost: 10, 
+                    owned: 0, 
+                    gps: upgrades[key].gps * 2 
+                };
+            }
+            updateDisplay();
+        }
+
+        // Game loop
+        setInterval(() => {
+            let gps = Object.values(upgrades)
+                .reduce((sum, u) => sum + (u.owned * u.gps), 0);
+            glubs += gps;
+            updateDisplay();
+            
+            // Random news updates
+            const news = [
+                "Hermit crabs unionize for better shell benefits!",
+                "Sentient kelp found writing poetry!",
+                "Jellyfish elected mayor of Atlantis!",
+                "GLUB COIN value plummets - invest in bubbles!",
+                "Aquatic absurdity reaches critical levels!"
+            ];
+            document.getElementById('news').textContent = 
+                `📰 GLUB NEWS: ${news[Math.floor(Math.random() * news.length)]}`;
+        }, 1000);
+
+        // Click handler
+        document.getElementById('glubButton').addEventListener('click', () => {
+            glubs++;
+            createBubble();
+            updateDisplay();
+        });
+
+        // Initial setup
+        updateDisplay();
+    </script>
+</body>
+</html>

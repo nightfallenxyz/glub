@@ -1,42 +1,90 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Glub Clicker: The Aquatic Absurdity</title>
+    <title>Glub Clicker Mobile</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
-        body {
-            background: linear-gradient(to bottom, #000044, #006666);
-            color: #00ffff;
-            font-family: 'Comic Sans MS', cursive;
-            text-align: center;
+        :root {
+            --glub-color: #00ffff;
+            --background: linear-gradient(to bottom, #000044, #006666);
+            --text-size: 1.2rem;
         }
+
+        body {
+            background: var(--background);
+            color: var(--glub-color);
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 10px;
+            touch-action: manipulation;
+            line-height: 1.5;
+        }
+
         #glubContainer {
             background: rgba(0, 0, 0, 0.5);
-            padding: 20px;
-            border-radius: 15px;
-            margin: 20px auto;
-            width: 80%;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px auto;
+            max-width: 600px;
         }
+
+        h1 {
+            font-size: 2rem;
+            margin: 10px 0;
+            text-align: center;
+        }
+
         #glubButton {
             background: #00cccc;
-            border: 3px solid #00ffff;
+            border: 3px solid var(--glub-color);
             border-radius: 50%;
             width: 200px;
             height: 200px;
-            font-size: 24px;
+            font-size: 1.5rem;
             cursor: pointer;
             transition: transform 0.1s;
-            margin: 20px;
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            touch-action: manipulation;
         }
+
         #glubButton:active {
-            transform: scale(0.9);
+            transform: scale(0.95);
         }
+
+        .upgrades-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+
         .upgrade {
             background: #004444;
-            border: 2px dashed #00ffff;
-            padding: 10px;
-            margin: 10px;
+            border: 2px dashed var(--glub-color);
+            padding: 15px;
+            margin: 5px;
             cursor: pointer;
+            touch-action: manipulation;
+            font-size: 1rem;
+            min-height: 100px;
+            border-radius: 8px;
         }
+
+        #glubCounter {
+            font-size: 1.4rem;
+            margin: 15px 0;
+            text-align: center;
+        }
+
+        h2 {
+            font-size: 1.4rem;
+            margin: 15px 0;
+            text-align: center;
+        }
+
         .bubble {
             position: absolute;
             width: 30px;
@@ -44,10 +92,46 @@
             background: rgba(255, 255, 255, 0.3);
             border-radius: 50%;
             animation: float 3s infinite;
+            pointer-events: none;
         }
+
         @keyframes float {
             0% { transform: translateY(0); opacity: 1; }
             100% { transform: translateY(-100px); opacity: 0; }
+        }
+
+        #news {
+            font-size: 1rem;
+            padding: 10px 0;
+            margin-top: 15px;
+            border-top: 1px solid #00ffff;
+            text-align: center;
+        }
+
+        @media (max-width: 480px) {
+            :root {
+                --text-size: 1rem;
+            }
+
+            #glubButton {
+                width: 150px;
+                height: 150px;
+                font-size: 1.2rem;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            h2 {
+                font-size: 1.2rem;
+            }
+
+            .upgrade {
+                font-size: 0.9rem;
+                min-height: 80px;
+                padding: 10px;
+            }
         }
     </style>
 </head>
@@ -59,9 +143,9 @@
         <button id="glubButton">GLUB!<br>🐟</button>
         
         <h2>GLUB UPGRADES</h2>
-        <div id="upgrades"></div>
+        <div class="upgrades-grid" id="upgrades"></div>
         
-        <h2>🪸 PRESTIGE SYSTEM 🪸</h2>
+        <h2>🪸 PRESTIGE 🪸</h2>
         <div id="prestige"></div>
         
         <div id="news">📰 GLUB NEWS: Welcome to the Glubverse!</div>
@@ -89,21 +173,22 @@
             document.getElementById('glubCounter').textContent = 
                 `GLUBS: ${Math.floor(glubs)} 🐠 | PLANKTON: ${plankton} 🌟`;
             
-            // Update upgrades
             document.getElementById('upgrades').innerHTML = Object.entries(upgrades)
                 .map(([key, val]) => `
                     <div class="upgrade" onclick="buyUpgrade('${key}')">
-                        ${key.toUpperCase()} - ${val.cost} GLUBS<br>
-                        OWNED: ${val.owned} | GPS: ${val.gps}
+                        ${key.toUpperCase()}<br>
+                        Cost: ${Math.ceil(val.cost)} GLUBS<br>
+                        Owned: ${val.owned}<br>
+                        GPS: ${val.gps}
                     </div>
                 `).join('');
             
-            // Update prestige
             document.getElementById('prestige').innerHTML = 
                 plankton >= 1 ? "ASCENDED TO GLUB GOD" : 
-                `<button class="upgrade" onclick="prestige()">
-                    ASCEND FOR ${plankton + 1}🌟 (RESETS EVERYTHING)
-                </button>`;
+                `<div class="upgrade" onclick="prestige()">
+                    ASCEND FOR ${plankton + 1}🌟<br>
+                    (Resets Progress)
+                </div>`;
         }
 
         function buyUpgrade(type) {
@@ -128,14 +213,12 @@
             updateDisplay();
         }
 
-        // Game loop
         setInterval(() => {
             let gps = Object.values(upgrades)
                 .reduce((sum, u) => sum + (u.owned * u.gps), 0);
             glubs += gps;
             updateDisplay();
             
-            // Random news updates
             const news = [
                 "Hermit crabs unionize for better shell benefits!",
                 "Sentient kelp found writing poetry!",
@@ -147,14 +230,13 @@
                 `📰 GLUB NEWS: ${news[Math.floor(Math.random() * news.length)]}`;
         }, 1000);
 
-        // Click handler
         document.getElementById('glubButton').addEventListener('click', () => {
             glubs++;
             createBubble();
             updateDisplay();
         });
 
-        // Initial setup
+        // Initialize game
         updateDisplay();
     </script>
 </body>
